@@ -201,6 +201,7 @@ def get_term_keys(data, result={}):
     return result
 
 def mergeFiles():
+    offerList = readOfferIndexFile()
     total_offers = len(offerList)
     print(total_offers)
     offer_count = 0
