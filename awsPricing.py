@@ -16,7 +16,7 @@ def main():
     base_url = "https://pricing.us-east-1.amazonaws.com"
     offer_index_url = "/offers/v1.0/aws/index.json"
     request_url = base_url + offer_index_url
-    offerURLs = readOfferIndexFile(request_url)
+    offerURLs = getOfferIndex(request_url)
 
     number_of_offers = 0
     for i in offerURLs:
@@ -25,13 +25,15 @@ def main():
 
     print(f"Number of offerings: {number_of_offers}")
 
+    mergeFiles()
+
     stopTime = datetime.today()
 
     print(f"Finished at: {stopTime}")
     print(f"Processing time: {stopTime - startTime}")
 
 
-def readOfferIndexFile(url):
+def getOfferIndex(url):
     response = requests.get(url)
 
     # Create a dict to store offer list
@@ -197,6 +199,71 @@ def get_term_keys(data, result={}):
         else:
             get_term_keys(data[key])
     return result
+
+def mergeFiles():
+    total_offers = len(offerList)
+    print(total_offers)
+    offer_count = 0
+    merged_products_df = pd.DataFrame()
+    merged_terms_df = pd.DataFrame()
+
+    for i in offerList:
+        offer_count += 1
+        print(f"({offer_count}/{total_offers}) {i}")
+
+        filepath = f"{str(Path(__file__).parent)}/products/awsProducts-{i}.csv"
+        product_df = readFile(filepath)
+        df_list = [merged_products_df, product_df]
+        merged_products_df = pd.concat(df_list)
+    
+    writeMergedFile(merged_products_df, "awsProductsMerged")
+
+    for i in offerList:
+        offer_count += 1
+        print(f"({offer_count}/{total_offers}) {i}")
+
+        filepath = f"{str(Path(__file__).parent)}/terms/awsTerms-{i}.csv"
+        terms_df = readFile(filepath)
+        df_list = [merged_terms_df, terms_df]
+        merged_terms_df = pd.concat(df_list)
+    
+    writeMergedFile(merged_terms_df, "awsTermsMerged")
+
+
+    print(f"Number of Products: {len(merged_products_df.index)}")
+    print(f"Number of Terms: {len(merged_terms_df.index)}")
+
+def readOfferIndexFile():
+    # Set the file location and filename to read files
+    filelocation = str(Path(__file__).parent) + "/offerIndex/"
+    filename = "awsOfferIndex"
+    filepath = filelocation + filename + '.json'
+
+    with open(filepath, 'r') as f:
+        jsonInput = json.load(f)
+
+    offers = jsonInput["offers"]
+    offerCodes = []
+    for i in offers:
+        offerCodes.append(i)
+
+    return offerCodes
+
+def readFile(filepath):
+    # Set the file location and filename to read files
+    try:
+        df = pd.read_csv(filepath)
+
+        return df
+    except:
+        df = pd.DataFrame()
+        return df
+    
+def writeMergedFile(dataframe, fileoutputname):
+    # Set the file location and filename to read files
+    fileoutputlocation = str(Path(__file__).parent)
+
+    dataframe.to_csv(os.path.join(fileoutputlocation,fileoutputname) + '.csv', index=False)
 
 if __name__ == "__main__":
     main()
