@@ -214,8 +214,9 @@ def mergeFiles():
 
         filepath = f"{str(Path(__file__).parent)}/products/awsProducts-{i}.csv"
         product_df = readFile(filepath)
-        df_list = [merged_products_df, product_df]
-        merged_products_df = pd.concat(df_list)
+        #df_list = [merged_products_df, product_df]
+        #merged_products_df = pd.concat(df_list)
+        merged_products_df = merged_products_df.merge(product_df, how='outer')
     
     writeMergedFile(merged_products_df, "awsProductsMerged")
 
@@ -225,8 +226,9 @@ def mergeFiles():
 
         filepath = f"{str(Path(__file__).parent)}/terms/awsTerms-{i}.csv"
         terms_df = readFile(filepath)
-        df_list = [merged_terms_df, terms_df]
-        merged_terms_df = pd.concat(df_list)
+        #df_list = [merged_terms_df, terms_df]
+        #merged_terms_df = pd.concat(df_list)
+        merged_terms_df = merged_terms_df.merg(terms_df, how='outer')
     
     writeMergedFile(merged_terms_df, "awsTermsMerged")
 
